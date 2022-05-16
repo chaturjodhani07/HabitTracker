@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import CoreData
 import UserNotifications
-class HabitViewModel: ObservableObject {
+class HabitViewModel: NSObject, ObservableObject, UNUserNotificationCenterDelegate {
     // MARK: New Habit Properties
     @Published var addNewHabit: Bool = false
     
@@ -30,17 +30,24 @@ class HabitViewModel: ObservableObject {
     // MARK: Notification Access Status
     @Published var notificartionAccess: Bool = false
     
-    init(){
+    override init(){
+        super.init()
         requestNotificationAccess()
     }
     
     
     func requestNotificationAccess(){
-        UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert]) { status, _ in
+        UNUserNotificationCenter.current().requestAuthorization(options: [.sound, .alert, .badge]) { status, _ in
             DispatchQueue.main.async {
                 self.notificartionAccess = status
             }
         }
+        // MARK: To Show In App Notification
+        UNUserNotificationCenter.current().delegate = self
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.sound, .banner])
     }
     
     // MARK: Adding Habit to Database
